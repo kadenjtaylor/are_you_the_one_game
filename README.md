@@ -11,3 +11,12 @@
         - guesses a single male/female pair, receives immediate yes/no
         - guesses a total lineup, recieves a number of matches
         - If the lineup is correct on or before the 10th turn, player wins
+
+## Running the Simulation
+
+    $ ruby game.rb
+
+## Dependencies
+
+    - Ruby
+    - OpenStruct
