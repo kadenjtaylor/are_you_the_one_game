@@ -68,6 +68,10 @@ class Game
             @good_pairs, @bad_pairs, @males, @females
         )
         guess(player_guess)
+        player_lineup = @player.create_lineup(
+            @good_pairs, @bad_pairs, @males, @females
+        )
+        judge_lineup(player_lineup)
     end
 
     def player_wins
