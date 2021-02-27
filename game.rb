@@ -65,22 +65,13 @@ end
 
 class Player
 
-    def create_guess(males, females)
-        puts "\t- Creating guess..."
-        # randomly grab one male and one female
-        m = males.sample
-        f = females.sample
-
-        # create a pair out of them
-        OpenStruct.new(
-            :male => m,
-            :female => f
-        )
+    def initialize
+        # TODO: Include whatever structure represents the player's memory
     end
 
-    def create_lineup(males, females)
-        puts "\t- Creating lineup..."
-        random_pairings(males, females)
+    def create_guess(males, females)
+        puts "\t- Creating guess..."
+        random_pair(males, females);
     end
 
     def guess_feedback(pair, is_correct)
@@ -88,11 +79,28 @@ class Player
         # TODO: store some info that'll be helpful
     end
 
+    def create_lineup(males, females)
+        puts "\t- Creating lineup..."
+        random_pairings(males, females)
+    end
+
     def lineup_feedback(lineup, num_correct)
         puts "\t- Number correct: #{num_correct}"
         # TODO: store some info that'll be helpful
     end
 
+end
+
+def random_pair(males, females)
+    # randomly grab one male and one female
+    m = males.sample
+    f = females.sample
+
+    # create a pair out of them
+    OpenStruct.new(
+        :male => m,
+        :female => f
+    )
 end
 
 def random_pairings(males, females)
