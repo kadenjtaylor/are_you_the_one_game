@@ -47,13 +47,16 @@ class DumbPlayer
         fs = Array.new(females)
 
         # Fill with all known good pairs
-        good_pairs = pairs_with(YES)
-        debug_print "\t- I'm picking my #{good_pairs.size} known pairs"
-        good_pairs.each do |p|
-            lineup.append(p)
-            ms.delete(p.male)
-            fs.delete(p.female)
-        end
+        # This is commented out to explore go-for-broke strat
+        # Player tries to get ZERO right, so we can mark all ten
+        # as NO for sure, instead of dealing with probablility
+        # good_pairs = pairs_with(YES)
+        # debug_print "\t- I'm picking my #{good_pairs.size} known pairs"
+        # good_pairs.each do |p|
+        #     lineup.append(p)
+        #     ms.delete(p.male)
+        #     fs.delete(p.female)
+        # end
 
         # Random guesses on the others
         randoms = random_pairings(ms, fs)
@@ -68,6 +71,13 @@ class DumbPlayer
     def lineup_feedback(lineup, num_correct)
         debug_print "\nFEEDBACK:"
         debug_print "\t- I got #{num_correct} right!"
+
+        if num_correct == 0
+            debug_print "\t- Since none were correct, I can mark them all NO"
+            lineup.each do |p|
+                set_no(p.male, p.female)
+            end
+        end
         # TODO: store some info that'll be helpful
     end
 
