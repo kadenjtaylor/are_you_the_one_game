@@ -9,30 +9,44 @@ class DumbPlayer
 
     def initialize
         @pairs = {}
-        @debug = true
+        @debug = false
+        @info_percentages = []
     end
 
-    def create_guess(males, females)
-        debug_print "-----------------------------------------------------------------"
-        debug_print "Current Knowledge:"
+    def d(s)
+        if @debug
+            puts s
+        end
+    end
+
+    def info_percentage
+        (100.0-pairs_with(MAYBE).size)/100
+    end
+
+    def create_guess(males, females, turn_number)
+        d "-----------------------------------------------------------------"
+        d "Turn #{turn_number}: "
+        d "-----------------------------------------------------------------"
+        d "Current Knowledge: #{info_percentage}"
+        @info_percentages.append(info_percentage)
         print_pairs_grid
         if @pairs.empty?
             populate_all_possible_pairs(males, females)
         end
-        debug_print "-----------------------------------------------------------------"
-        debug_print "GUESS:"
-        debug_print "\t- start_state { Good: #{pairs_with(YES).size}/10, Bad:  #{pairs_with(NO).size}/90 }"
+        d "-----------------------------------------------------------------"
+        d "GUESS:"
+        d "\t- start_state { Good: #{pairs_with(YES).size}/10, Bad:  #{pairs_with(NO).size}/90 }"
         # puts "\t- Creating guess..."
         possible_guesses = pairs_with(MAYBE)
-        debug_print "\t- I found #{possible_guesses.length} pairs I could guess..."
+        d "\t- I found #{possible_guesses.length} pairs I could guess..."
         randy = possible_guesses.sample
-        debug_print "\t- Guessing: #{print_pair(randy)}"
+        d "\t- Guessing: #{print_pair(randy)}"
         randy
     end
 
     def guess_feedback(pair, is_correct)
-        debug_print "\nFEEDBACK:"
-        debug_print "\t- Guess was #{is_correct ? "correct!" : "incorrect!"}"
+        d "\nFEEDBACK:"
+        d "\t- Guess was #{is_correct ? "correct!" : "incorrect!"}"
         if is_correct
             mark_cross(pair)
         else
@@ -40,51 +54,43 @@ class DumbPlayer
         end
     end
 
-    def create_lineup(males, females)
-        debug_print "\nLINEUP:"
+    def create_lineup(males, females, turn_number)
+        d "\nLINEUP:"
         lineup = []
         ms = Array.new(males)
         fs = Array.new(females)
 
-        # Fill with all known good pairs
-        # This is commented out to explore go-for-broke strat
-        # Player tries to get ZERO right, so we can mark all ten
-        # as NO for sure, instead of dealing with probablility
-        # good_pairs = pairs_with(YES)
-        # debug_print "\t- I'm picking my #{good_pairs.size} known pairs"
-        # good_pairs.each do |p|
-        #     lineup.append(p)
-        #     ms.delete(p.male)
-        #     fs.delete(p.female)
-        # end
+        # switch from explore to exploit eventually
+        if turn_number > 15
+            good_pairs = pairs_with(YES)
+            d "\t- I'm picking my #{good_pairs.size} known pairs"
+            good_pairs.each do |p|
+                lineup.append(p)
+                ms.delete(p.male)
+                fs.delete(p.female)
+            end
+        end
 
         # Random guesses on the others
         randoms = random_pairings(ms, fs)
-        debug_print "\t- I'm adding #{randoms.size} random ones"
+        d "\t- I'm adding #{randoms.size} random ones"
         randoms.each do |p|
             lineup.append(p)
         end
-
         lineup
     end
 
     def lineup_feedback(lineup, num_correct)
-        debug_print "\nFEEDBACK:"
-        debug_print "\t- I got #{num_correct} right!"
+        d "\nFEEDBACK:"
+        d "\t- I got #{num_correct} right!"
 
         if num_correct == 0
-            debug_print "\t- Since none were correct, I can mark them all NO"
+            d "\t- Since none were correct, I can mark them all NO"
             lineup.each do |p|
                 set_no(p.male, p.female)
             end
         end
         # TODO: store some info that'll be helpful
-    end
-
-    def debug_print(s)
-        if @debug
-            puts s
-        end
     end
 
     def populate_all_possible_pairs(males, females)
@@ -99,7 +105,7 @@ class DumbPlayer
                 # puts "(#{m} + #{f}): #{@pairs[m][f]}"
             end
         end
-        debug_print "Created #{count} pairs"
+        d "Created #{count} pairs"
     end
 
     def pairs_with(value)
@@ -131,22 +137,22 @@ class DumbPlayer
     def set_no(male, female)
         if @pairs[male][female] == MAYBE
             @pairs[male][female] = NO
-            debug_print "\t\t- (#{male} + #{female}) set to NO"
+            d "\t\t- (#{male} + #{female}) set to NO"
         elsif @pairs[male][female] == NO
-            debug_print "\t\t- (#{male} + #{female}) was already NO"
+            d "\t\t- (#{male} + #{female}) was already NO"
         else
-            # debug_print "(Tried to go YES -> NO)"
+            # d "(Tried to go YES -> NO)"
         end
     end
 
     def set_yes(male, female)
         if @pairs[male][female] == MAYBE
             @pairs[male][female] = YES
-            debug_print "\t\t- (#{male} + #{female}) set to YES"
+            d "\t\t- (#{male} + #{female}) set to YES"
         elsif @pairs[male][female] == YES
-            debug_print "\t\t- (#{male} + #{female}) was already YES"
+            d "\t\t- (#{male} + #{female}) was already YES"
         else
-            debug_print "(Tried to go NO -> YES)"
+            d "(Tried to go NO -> YES)"
         end
     end
 
@@ -162,7 +168,11 @@ class DumbPlayer
             end
             ret_list += "\n\t"
         end
-        puts ret_list
+        d ret_list
+    end
+
+    def dump_data
+        @info_percentages
     end
 
 end

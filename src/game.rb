@@ -4,7 +4,7 @@ require_relative 'util'
 
 class Game
 
-    def initialize(males, females, player)
+    def initialize(males, females, player, turn_limit=nil)
         if males.size != females.size
             throw new Error("Group size mismatch!")
         end
@@ -14,9 +14,10 @@ class Game
         @females = Array.new(females)
         @player = player
         @last_lineup_correct = 0
-        @turns_left = 10
+        @turn_number = 1
         @is_win = false
         @is_over = false
+        @turn_limit = turn_limit
     end
 
     def is_guess_correct(player_guess)
@@ -34,20 +35,17 @@ class Game
 
     def one_round
 
-        puts "-----------------------------------------------------------------"
-        puts "Turn #{11-@turns_left}: "
-
         # Step One: Guess a Pair
-        player_guess = @player.create_guess(@males, @females)
+        player_guess = @player.create_guess(@males, @females, @turn_number)
         correct = @correct_pairs.include? player_guess
         @player.guess_feedback(player_guess, correct)
 
         # Step Two: Try a Lineup
-        player_lineup = @player.create_lineup(@males, @females)
+        player_lineup = @player.create_lineup(@males, @females, @turn_number)
         num_correct = count_correct_in_lineup(player_lineup)
         @player.lineup_feedback(player_lineup, num_correct)
 
-        @turns_left -= 1
+        @turn_number += 1
         
         # Tie goes to the player
         if num_correct == @threshold
@@ -57,7 +55,7 @@ class Game
         end
 
         # If we haven't won by the end of the last turn, we lose
-        if @turns_left == 0
+        if !@turn_limit.nil? && @turn_number >= @turn_limit
             # puts "[ Player loses...] "
             @is_win = false
             @is_over = true
@@ -68,6 +66,13 @@ class Game
         return @is_over
     end
 
+    def play_out
+        # returns true iff player wins
+        while !is_over
+            one_round
+        end
+    end
+
     def win?
         @is_win
     end
@@ -76,11 +81,8 @@ class Game
         @last_lineup_correct
     end
 
-    def play_out
-        # returns true iff player wins
-        while !is_over
-            one_round
-        end
+    def turn_number
+        @turn_number
     end
 
 end
